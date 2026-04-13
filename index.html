@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Room Schedule</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #000;
+    --fg: #fff;
+    --accent: #00ff88;
+    --dim: #444;
+    --warn: #ffaa00;
+    --danger: #ff3333;
+    --room-bg: #0a0a0a;
+    --room-border: #1a1a1a;
+    --mono: 'Share Tech Mono', monospace;
+    --display: 'Bebas Neue', sans-serif;
+    --body: 'Inter', sans-serif;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--body);
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── Scanline overlay — toggled via .scanlines class on body ── */
+  body.scanlines::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px, transparent 3px,
+      rgba(0,0,0,.12) 3px, rgba(0,0,0,.12) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* ── Layout ─────────────────────────────────────────── */
+  #app {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100vh;
+    padding: 2vh 2vw;
+    gap: 2vh;
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  #header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+  }
+
+  #clock {
+    font-family: var(--display);
+    font-size: clamp(4rem, 14vw, 13rem);
+    line-height: 1;
+    letter-spacing: .04em;
+    color: var(--fg);
+    text-shadow: 0 0 40px rgba(0,255,136,.2);
+    text-align: center;
+  }
+
+  #date-line {
+    font-family: var(--mono);
+    font-size: clamp(.7rem, 1.4vw, 1.1rem);
+    color: var(--dim);
+    letter-spacing: .15em;
+    text-align: center;
+  }
+
+  #clock-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .3rem;
+    grid-column: 2;
+  }
+
+  /* ── Control panels ─────────────────────────────────── */
+  #header-left  { grid-column: 1; }
+  #header-right { grid-column: 3; display: flex; justify-content: flex-end; }
+
+  /* Panels fade + disable pointer events when mouse is hidden */
+  #controls-left, #controls-right {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    transition: opacity .5s;
+  }
+  #controls-right { align-items: flex-end; }
+
+  body.mouse-hidden #controls-left,
+  body.mouse-hidden #controls-right {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ── Buttons ─────────────────────────────────────────── */
+  .ctrl-btn {
+    background: transparent;
+    border: 1px solid var(--dim);
+    color: var(--dim);
+    font-family: var(--mono);
+    font-size: .75rem;
+    letter-spacing: .1em;
+    padding: .4rem .9rem;
+    cursor: pointer;
+    transition: border-color .2s, color .2s;
+    white-space: nowrap;
+  }
+  .ctrl-btn:hover        { border-color: var(--accent); color: var(--accent); }
+  .ctrl-btn.active       { border-color: var(--accent); color: var(--accent); }
+
+  #advance-btn           { border-color: #333; color: #555; font-size: .7rem; }
+  #advance-btn:hover     { border-color: var(--warn); color: var(--warn); }
+  #advance-btn.shifted   { border-color: var(--warn); color: var(--warn); }
+
+  #reset-btn             { opacity: .3; transition: opacity .3s; }
+  #reset-btn.visible     { opacity: 1; }
+
+  /* ── Offset indicator ───────────────────────────────── */
+  #offset-indicator {
+    font-family: var(--mono);
+    font-size: clamp(.5rem, .9vw, .7rem);
+    color: var(--warn);
+    letter-spacing: .1em;
+    text-align: center;
+    min-height: 1em;
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  #offset-indicator.visible { opacity: 1; }
+
+  /* ── Room grid ──────────────────────────────────────── */
+  #rooms {
+    display: grid;
+    gap: 1.5vw;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: stretch;
+  }
+
+  .room-card {
+    background: var(--room-bg);
+    border: 1px solid var(--room-border);
+    border-radius: 4px;
+    padding: clamp(.8rem, 2vh, 1.8rem) clamp(.8rem, 2vw, 1.8rem);
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .4s;
+  }
+  .room-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity .4s;
+  }
+  .room-card.active              { border-color: #1a2e23; }
+  .room-card.active::before      { opacity: 1; }
+
+  .room-name {
+    font-family: var(--display);
+    font-size: clamp(1.2rem, 3.5vw, 2.8rem);
+    letter-spacing: .06em;
+    color: var(--fg);
+    line-height: 1;
+  }
+
+  .divider { height: 1px; background: var(--room-border); }
+
+  .slot-label {
+    font-family: var(--mono);
+    font-size: clamp(.6rem, 1.1vw, .85rem);
+    letter-spacing: .12em;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+
+  .current-event {
+    font-size: clamp(.85rem, 1.8vw, 1.35rem);
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1.2;
+  }
+
+  .current-time-slot {
+    font-family: var(--mono);
+    font-size: clamp(.7rem, 1.2vw, .95rem);
+    color: #555;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: #111;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: auto;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 1s linear, background .4s;
+  }
+  .progress-fill.warn   { background: var(--warn); }
+  .progress-fill.danger { background: var(--danger); }
+
+  .remaining {
+    font-family: var(--mono);
+    font-size: clamp(.65rem, 1.1vw, .9rem);
+    color: var(--dim);
+  }
+  .remaining span            { color: var(--fg); font-weight: 600; }
+  .remaining.warn span       { color: var(--warn); }
+  .remaining.danger span     { color: var(--danger); }
+
+  .next-label {
+    font-family: var(--mono);
+    font-size: clamp(.55rem, .95vw, .78rem);
+    letter-spacing: .1em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-top: .3rem;
+  }
+  .next-event { font-size: clamp(.75rem, 1.4vw, 1.05rem); color: #888; line-height: 1.2; }
+
+  .free-text {
+    font-family: var(--mono);
+    font-size: clamp(.9rem, 1.8vw, 1.3rem);
+    color: #333;
+    letter-spacing: .1em;
+  }
+
+  /* ── Drop zone ──────────────────────────────────────── */
+  #drop-zone {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2rem;
+    background: var(--bg);
+    z-index: 10;
+    cursor: pointer;
+  }
+  #drop-zone.hidden { display: none; }
+  #drop-zone h1 {
+    font-family: var(--display);
+    font-size: clamp(2rem, 6vw, 5rem);
+    letter-spacing: .1em;
+    color: var(--fg);
+  }
+  #drop-zone p {
+    font-family: var(--mono);
+    color: var(--dim);
+    font-size: 1rem;
+    letter-spacing: .1em;
+    text-align: center;
+    line-height: 1.8;
+  }
+  #drop-zone .border-box {
+    border: 1px dashed #333;
+    padding: 3rem 5rem;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 1rem;
+    transition: border-color .2s;
+  }
+  #drop-zone.drag-over .border-box { border-color: var(--accent); }
+  #drop-zone .hint {
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: #333;
+    letter-spacing: .15em;
+    text-align: center;
+  }
+  #file-input { display: none; }
+</style>
+</head>
+<body>
+
+<input type="file" id="file-input" accept=".xlsx,.xls,.csv" />
+
+<div id="drop-zone">
+  <div class="border-box">
+    <h1>ROOM SCHEDULE</h1>
+    <p>Drop your schedule Excel file here<br>or click to browse</p>
+    <p class="hint">Column A = time slots · Columns B–D = room names · First row = headers</p>
+  </div>
+</div>
+
+<div id="app">
+  <div id="header">
+
+    <div id="header-left">
+      <div id="controls-left">
+        <button class="ctrl-btn" id="load-btn">LOAD FILE</button>
+        <button class="ctrl-btn" id="advance-btn" title="Advance displayed slot (Space / →)">NEXT SLOT ›</button>
+        <button class="ctrl-btn" id="reset-btn"   title="Reset to clock-based slot (Backspace / ←)">RESET</button>
+      </div>
+    </div>
+
+    <div id="clock-col">
+      <div id="clock">00:00:00</div>
+      <div id="date-line">—</div>
+      <div id="offset-indicator">▲ ADVANCED +0 SLOTS</div>
+    </div>
+
+    <div id="header-right">
+      <div id="controls-right">
+        <button class="ctrl-btn" id="fs-btn">FULLSCREEN</button>
+        <button class="ctrl-btn" id="scanline-btn">SCANLINES OFF</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="rooms"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   ░░  CONFIG  ░░  Edit these to change alert thresholds
+   ═══════════════════════════════════════════════════════════ */
+const WARN_SECONDS   = 45;   // → yellow bar
+const DANGER_SECONDS = 20;   // → red bar
+/* ═══════════════════════════════════════════════════════════ */
+
+/* ── State ──────────────────────────────────────────────── */
+let schedule   = [];
+let roomNames  = [];
+let slotOffset = 0;
+let wakelock   = null;
+
+/* ── Wake lock ──────────────────────────────────────────── */
+async function requestWakeLock() {
+  if ('wakeLock' in navigator) {
+    try { wakelock = await navigator.wakeLock.request('screen'); } catch(e) {}
+  }
+}
+requestWakeLock();
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') requestWakeLock();
+});
+
+/* ── Mouse hide ─────────────────────────────────────────── */
+let mouseTimer;
+document.addEventListener('mousemove', () => {
+  document.body.style.cursor = 'default';
+  document.body.classList.remove('mouse-hidden');
+  clearTimeout(mouseTimer);
+  mouseTimer = setTimeout(() => {
+    document.body.style.cursor = 'none';
+    document.body.classList.add('mouse-hidden');
+  }, 3000);
+});
+
+/* ── Scanlines ──────────────────────────────────────────── */
+let scanlinesOn = false;
+const scanlineBtn = document.getElementById('scanline-btn');
+scanlineBtn.addEventListener('click', () => {
+  scanlinesOn = !scanlinesOn;
+  document.body.classList.toggle('scanlines', scanlinesOn);
+  scanlineBtn.textContent = scanlinesOn ? 'SCANLINES ON' : 'SCANLINES OFF';
+  scanlineBtn.classList.toggle('active', scanlinesOn);
+});
+
+/* ── Fullscreen ─────────────────────────────────────────── */
+const fsBtn = document.getElementById('fs-btn');
+fsBtn.addEventListener('click', () => {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+  else document.exitFullscreen();
+});
+document.addEventListener('fullscreenchange', () => {
+  fsBtn.textContent = document.fullscreenElement ? 'EXIT FULL' : 'FULLSCREEN';
+});
+
+/* ── Manual advance ─────────────────────────────────────── */
+const advBtn   = document.getElementById('advance-btn');
+const resetBtn = document.getElementById('reset-btn');
+const offsetEl = document.getElementById('offset-indicator');
+
+function setOffset(n) {
+  slotOffset = Math.max(0, Math.min(n, Math.max(0, schedule.length - 1)));
+  const active = slotOffset > 0;
+  offsetEl.textContent = `▲ ADVANCED +${slotOffset} SLOT${slotOffset !== 1 ? 'S' : ''}`;
+  offsetEl.classList.toggle('visible', active);
+  advBtn.classList.toggle('shifted', active);
+  resetBtn.classList.toggle('visible', active);
+  updateRooms();
+}
+
+advBtn.addEventListener('click',   () => setOffset(slotOffset + 1));
+resetBtn.addEventListener('click', () => setOffset(0));
+
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'ArrowRight') { e.preventDefault(); setOffset(slotOffset + 1); }
+  if (e.code === 'Backspace' || e.code === 'ArrowLeft') { e.preventDefault(); setOffset(0); }
+});
+
+/* ── File loading ───────────────────────────────────────── */
+const dropZone  = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+dropZone.addEventListener('click', () => fileInput.click());
+document.getElementById('load-btn').addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb   = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+      const ws   = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, dateNF: 'HH:MM' });
+      parseSchedule(rows);
+      dropZone.classList.add('hidden');
+    } catch(err) { alert('Could not read file: ' + err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseSchedule(rows) {
+  if (rows.length < 2) return;
+  roomNames  = rows[0].slice(1).filter(Boolean);
+  schedule   = [];
+  slotOffset = 0;
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row[0]) continue;
+    schedule.push({
+      timeStr: String(row[0]).trim(),
+      rooms:   roomNames.map((_, j) => String(row[j + 1] || '').trim())
+    });
+  }
+  setOffset(0);
+  buildRoomCards();
+}
+
+/* ── Time helpers ───────────────────────────────────────── */
+function parseMinutes(str) {
+  if (!str) return null;
+  const p = str.split(':');
+  if (p.length < 2) return null;
+  const h = parseInt(p[0], 10), m = parseInt(p[1], 10);
+  return (isNaN(h) || isNaN(m)) ? null : h * 60 + m;
+}
+function nowMinutes() { const n = new Date(); return n.getHours() * 60 + n.getMinutes(); }
+function nowSeconds() { const n = new Date(); return n.getHours() * 3600 + n.getMinutes() * 60 + n.getSeconds(); }
+
+/* ── Build room cards ───────────────────────────────────── */
+function buildRoomCards() {
+  const container = document.getElementById('rooms');
+  container.innerHTML = '';
+  container.style.gridTemplateColumns = `repeat(${Math.min(roomNames.length || 1, 4)}, 1fr)`;
+  roomNames.forEach((name, idx) => {
+    const card = document.createElement('div');
+    card.className = 'room-card';
+    card.id = `room-${idx}`;
+    card.innerHTML = `
+      <div class="room-name">${name}</div>
+      <div class="divider"></div>
+      <div class="slot-label">CURRENT</div>
+      <div class="current-event free-text">FREE</div>
+      <div class="current-time-slot"></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+      <div class="remaining"></div>
+      <div class="next-label">NEXT UP</div>
+      <div class="next-event">—</div>
+    `;
+    container.appendChild(card);
+  });
+  updateRooms();
+}
+
+/* ── Strip sensitive info after first comma ─────────────── */
+function cleanName(str) {
+  if (!str) return '';
+  const cut = str.indexOf(',');
+  return (cut === -1 ? str : str.slice(0, cut)).trim();
+}
+
+/* ── Update rooms ───────────────────────────────────────── */
+function updateRooms() {
+  if (!roomNames.length || !schedule.length) return;
+
+  const nowMin = nowMinutes();
+  const nowSec = nowSeconds();
+
+  // Clock-based slot: last row whose time ≤ now
+  let timeSlotIdx = -1;
+  for (let i = 0; i < schedule.length; i++) {
+    const sm = parseMinutes(schedule[i].timeStr);
+    if (sm !== null && sm <= nowMin) timeSlotIdx = i;
+  }
+
+  // Before the first slot starts: show first slot as UPCOMING
+  const beforeSchedule = timeSlotIdx < 0;
+
+  // Displayed slot = clock slot + manual offset (bookings only, not time)
+  // When before schedule, currentSlotIdx = 0 (upcoming), nextSlotIdx = 1
+  let currentSlotIdx, nextSlotIdx;
+  if (beforeSchedule) {
+    currentSlotIdx = 0;
+    nextSlotIdx    = schedule.length > 1 ? 1 : -1;
+  } else {
+    currentSlotIdx = Math.min(timeSlotIdx + slotOffset, schedule.length - 1);
+    nextSlotIdx    = currentSlotIdx + 1 < schedule.length ? currentSlotIdx + 1 : -1;
+  }
+
+  roomNames.forEach((_, roomIdx) => {
+    const card = document.getElementById(`room-${roomIdx}`);
+    if (!card) return;
+
+    const rawCurrent = currentSlotIdx >= 0 ? schedule[currentSlotIdx].rooms[roomIdx] : '';
+    const rawNext    = nextSlotIdx    >= 0 ? schedule[nextSlotIdx].rooms[roomIdx]    : '';
+    const currentEvent = cleanName(rawCurrent);
+    const nextEvent    = cleanName(rawNext);
+    const nextTime     = nextSlotIdx >= 0 ? schedule[nextSlotIdx].timeStr : '';
+
+    // Progress bar & remaining
+    let remainText = '', progressPct = 0, urgency = '';
+
+    if (beforeSchedule) {
+      // Count down to the first slot
+      const firstStart = parseMinutes(schedule[0].timeStr);
+      if (firstStart !== null) {
+        const firstStartSec = firstStart * 60;
+        const remSec = Math.max(0, firstStartSec - nowSec);
+        const remMin = Math.floor(remSec / 60);
+        const remS   = remSec % 60;
+        remainText   = `starts in ${remMin}m ${String(remS).padStart(2,'0')}s`;
+        progressPct  = 0;
+      }
+    } else if (timeSlotIdx >= 0) {
+      const realNext = timeSlotIdx + 1 < schedule.length ? timeSlotIdx + 1 : -1;
+      if (realNext >= 0) {
+        const startSec   = parseMinutes(schedule[timeSlotIdx].timeStr) * 60;
+        const endSec     = parseMinutes(schedule[realNext].timeStr)    * 60;
+        const totalSec   = endSec - startSec;
+        const elapsedSec = nowSec - startSec;
+        const remSec     = Math.max(0, endSec - nowSec);
+        if (totalSec > 0) {
+          progressPct = Math.min(100, (elapsedSec / totalSec) * 100);
+          const remMin = Math.floor(remSec / 60);
+          const remS   = remSec % 60;
+          remainText   = `${remMin}m ${String(remS).padStart(2,'0')}s remaining`;
+          if      (remSec <= DANGER_SECONDS) urgency = 'danger';
+          else if (remSec <= WARN_SECONDS)   urgency = 'warn';
+        }
+      } else {
+        remainText = 'Last slot';
+      }
+    }
+
+    const evEl   = card.querySelector('.current-event');
+    const tsEl   = card.querySelector('.current-time-slot');
+    const fillEl = card.querySelector('.progress-fill');
+    const remEl  = card.querySelector('.remaining');
+    const nxtEl  = card.querySelector('.next-event');
+    const slotLbl = card.querySelector('.slot-label');
+
+    if (beforeSchedule) {
+      // Show as UPCOMING — dim styling, no active glow
+      card.classList.remove('active');
+      slotLbl.textContent = 'UPCOMING';
+      if (currentEvent) {
+        evEl.className   = 'current-event';
+        evEl.style.opacity = '0.45';
+        evEl.textContent = currentEvent;
+        tsEl.textContent = schedule[0].timeStr;
+      } else {
+        evEl.className   = 'current-event free-text';
+        evEl.style.opacity = '1';
+        evEl.textContent = 'FREE';
+        tsEl.textContent = schedule[0].timeStr;
+      }
+    } else {
+      slotLbl.textContent = 'CURRENT';
+      evEl.style.opacity  = '1';
+      const isActive = !!currentEvent;
+      card.classList.toggle('active', isActive);
+      if (isActive) {
+        evEl.className   = 'current-event';
+        evEl.textContent = currentEvent;
+        tsEl.textContent = schedule[currentSlotIdx].timeStr + (nextTime ? ' – ' + nextTime : '');
+      } else {
+        evEl.className   = 'current-event free-text';
+        evEl.textContent = 'FREE';
+        tsEl.textContent = '';
+      }
+    }
+
+    fillEl.style.width = progressPct + '%';
+    fillEl.className   = 'progress-fill' + (urgency ? ' ' + urgency : '');
+
+    remEl.className = 'remaining' + (urgency ? ' ' + urgency : '');
+    if (remainText) {
+      // For "starts in Xm XXs" keep it all dim, no bold first word
+      if (beforeSchedule) {
+        remEl.innerHTML = remainText;
+      } else {
+        const parts = remainText.split(' ');
+        remEl.innerHTML = `<span>${parts[0]}</span> ${parts.slice(1).join(' ')}`;
+      }
+    } else {
+      remEl.textContent = '';
+    }
+
+    nxtEl.textContent = nextEvent ? (nextTime ? `[${nextTime}] ` : '') + nextEvent : '—';
+  });
+}
+
+/* ── Clock ──────────────────────────────────────────────── */
+const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  document.getElementById('date-line').textContent =
+    `${DAYS[now.getDay()].toUpperCase()}  ·  ${now.getDate()} ${MONTHS[now.getMonth()].toUpperCase()} ${now.getFullYear()}`;
+}
+
+/* ── Tick ───────────────────────────────────────────────── */
+function tick() { updateClock(); updateRooms(); }
+setInterval(tick, 1000);
+tick();
+</script>
+</body>
+</html>
