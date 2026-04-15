@@ -1,0 +1,107 @@
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Inter:wght@300;400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;900&display=swap');
+
+    :root {
+      --bg: #0a0d14;
+      /* dark navy background */
+      --fg: #ffffff;
+      /* white text */
+      /* --accent: #F5A800; */
+      --accent: #f9b233;
+      /* SM gold/amber */
+      --accent-blue: #4AB8E8;
+      /* SM sky blue */
+      --dim: #7a8fa6;
+      /* muted blue-grey */
+      --warn: #F5A800;
+      /* reuse gold for warnings */
+      --danger: #ff3333;
+      /* keep red for danger */
+      --room-bg: #0f1520;
+      /* slightly lighter navy */
+      --room-border: #1e2d42;
+      --room-name: var(--accent-blue);
+      /* navy border */
+      --time-slot: var(--fg);
+      --slot-progress: #00ff88;
+      --mono: 'Montserrat', sans-serif;
+      --display: 'Montserrat', sans-serif;
+      --body: 'Montserrat', sans-serif;
+    }
+
+    html, body {
+      background:
+        radial-gradient(900px 500px at 15% 10%, rgba(74,184,232,0.35), transparent 60%),
+        radial-gradient(700px 400px at 85% 30%, rgba(74,184,232,0.2), transparent 70%),
+        linear-gradient(120deg,
+          #060d18,
+          #0a1a2b,
+          #0f2f4a,
+          #1c6a94,
+          #0f2f4a,
+          #0a1a2b
+        );
+      background-size: 200% 200%;
+      animation: bgShift 30s ease-in-out infinite;
+    }
+
+    @keyframes bgShift {
+      0%   { background-position: 0% 50%, 100% 50%, 0% 50%; }
+      50%  { background-position: 20% 40%, 80% 60%, 100% 50%; }
+      100% { background-position: 0% 50%, 100% 50%, 0% 50%; }
+    }
+
+    /* Active room cards get a blue top bar instead of green */
+    .room-card::before {
+      background: var(--accent-blue);
+    }
+
+    /* Progress bar in gold */
+    /* .progress-fill {
+      background: var(--accent);
+    } */
+
+    /* Active event text in gold */
+    .current-event {
+      color: var(--accent);
+    }
+
+    #clock {
+      font-size: clamp(2.5rem, min(30vw, 32vh), 34rem);
+      color: var(--accent);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+
+.room-name {
+    font-size: clamp(1.5rem, 4.2vw, 3.4rem);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+    line-height: 1;
+    font-weight: 700;
+}
+
+
+.slot-label {
+    font-family: var(--mono);
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    letter-spacing: .12em;
+    color: var(--dim);
+    text-transform: uppercase;
+}
+
+.next-event {
+    color: var(--accent-blue);
+}
+
+.current-event {
+    font-size: clamp(1.05rem, 2.2vw, 1.65rem);
+}
+
+.current-time-slot {
+    font-size: clamp(1rem, 1.8vw, 1.5rem);
+}

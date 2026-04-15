@@ -1,0 +1,19 @@
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Inter:wght@300;400;600&display=swap');
+
+  :root {
+    --bg: #000;
+    --fg: #fff;
+    --accent: #00ff88;
+    --dim: #444;
+    --warn: #ffaa00;
+    --danger: #ff3333;
+    --slot-progress: var(--accent);
+    --room-bg: #0a0a0a;
+    --room-border: #1a1a1a;
+    --room-name: var(--fg);
+    --time-slot: #555;
+    --mono: 'Share Tech Mono', monospace;
+    --display: 'Bebas Neue', sans-serif;
+    --body: 'Inter', sans-serif;
+  }

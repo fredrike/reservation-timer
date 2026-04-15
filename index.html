@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Room Schedule</title>
+<title>Reservation Schedule</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Inter:wght@300;400;600&display=swap');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -18,6 +19,8 @@
     --danger: #ff3333;
     --room-bg: #0a0a0a;
     --room-border: #1a1a1a;
+    --room-name: var(--fg);
+    --time-slot: #555;
     --mono: 'Share Tech Mono', monospace;
     --display: 'Bebas Neue', sans-serif;
     --body: 'Inter', sans-serif;
@@ -63,7 +66,7 @@
 
   #clock {
     font-family: var(--display);
-    font-size: clamp(2.5rem, min(12vw, 14vh), 13rem);
+    font-size: 140vh;
     line-height: 1;
     letter-spacing: .04em;
     color: var(--fg);
@@ -98,7 +101,8 @@
     gap: clamp(.25rem, .5vh, .5rem);
     transition: opacity .5s;
   }
-  #controls-right { align-items: flex-end; }
+  /* #controls-left { align-items: flex-start; } */
+  /* #controls-right { align-items: flex-end; } */
 
   body.mouse-hidden #controls-left,
   body.mouse-hidden #controls-right {
@@ -121,6 +125,7 @@
   }
   .ctrl-btn:hover        { border-color: var(--accent); color: var(--accent); }
   .ctrl-btn.active       { border-color: var(--accent); color: var(--accent); }
+  .ctrl-btn option       { background: var(--bg); color: var(--fg); }
 
   #advance-btn           { border-color: #333; color: #555; font-size: .7rem; }
   #advance-btn:hover     { border-color: var(--warn); color: var(--warn); }
@@ -178,7 +183,7 @@
     font-family: var(--display);
     font-size: clamp(1rem, min(3.5vw, 4.5vh), 2.8rem);
     letter-spacing: .06em;
-    color: var(--fg);
+    color: var(--room-name);
     line-height: 1;
   }
 
@@ -202,13 +207,13 @@
   .current-time-slot {
     font-family: var(--mono);
     font-size: clamp(.7rem, 1.2vw, .95rem);
-    color: #555;
+    color: var(--time-slot);
   }
 
   /* ── Global slot progress (under clock) ────────────────── */
   #slot-progress-bar {
     width: clamp(8rem, 20vw, 22rem);
-    height: 13px;
+    height: 2vh;
     background: #1a1a1a;
     border-radius: 2px;
     overflow: hidden;
@@ -216,7 +221,7 @@
 
   #slot-progress-fill {
     height: 100%;
-    background: var(--accent);
+    background: var(--slot-progress);
     border-radius: 2px;
     transition: width 1s linear, background .4s;
     width: 0%;
@@ -226,7 +231,7 @@
 
   #slot-remaining {
     font-family: var(--mono);
-    font-size: clamp(.6rem, 1vw, .82rem);
+    font-size: clamp(.6rem, 2vw, 6rem);
     letter-spacing: .1em;
     color: var(--dim);
     min-height: 1em;
@@ -244,9 +249,13 @@
     letter-spacing: .1em;
     color: var(--dim);
     text-transform: uppercase;
-    margin-top: clamp(.1rem, .4vh, .3rem);
+    margin-top: auto;
   }
-  .next-event { font-size: clamp(.75rem, 1.4vw, 1.05rem); color: #888; line-height: 1.2; }
+  .next-event {
+    font-size: clamp(.9rem, 1.7vw, 1.3rem);
+    color: #888;
+    line-height: 1.2;
+  }
 
   .free-text {
     font-family: var(--mono);
@@ -297,6 +306,8 @@
   }
   #file-input { display: none; }
 </style>
+  <!-- Theme stylesheet (dynamic) -->
+  <link id="theme-stylesheet" rel="stylesheet" href="default-terminal.css" />
 </head>
 <body>
 
@@ -323,7 +334,6 @@
 
     <div id="clock-col">
       <div id="clock">00:00:00</div>
-      <div id="date-line">—</div>
       <div id="slot-progress-bar"><div id="slot-progress-fill"></div></div>
       <div id="slot-remaining"></div>
       <div id="offset-indicator">▲ ADVANCED +0 SLOTS</div>
@@ -333,6 +343,10 @@
       <div id="controls-right">
         <button class="ctrl-btn" id="fs-btn">FULLSCREEN</button>
         <button class="ctrl-btn" id="scanline-btn">SCANLINES OFF</button>
+        <select class="ctrl-btn" id="theme-select">
+          <option value="default-terminal.css">DEFAULT</option>
+          <option value="SM2026.css">SM2026</option>
+        </select>
       </div>
     </div>
 
@@ -355,6 +369,20 @@ let schedule   = [];
 let roomNames  = [];
 let slotOffset = 0;
 let wakelock   = null;
+
+// Load saved theme
+const savedTheme = localStorage.getItem('selected-theme');
+if (savedTheme) {
+  document.getElementById('theme-stylesheet').href = savedTheme;
+  document.getElementById('theme-select').value = savedTheme;
+}
+
+// Change theme
+document.getElementById('theme-select').addEventListener('change', () => {
+  const selected = document.getElementById('theme-select').value;
+  document.getElementById('theme-stylesheet').href = selected;
+  localStorage.setItem('selected-theme', selected);
+});
 
 /* ── Wake lock ──────────────────────────────────────────── */
 async function requestWakeLock() {
