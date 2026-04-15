@@ -610,7 +610,12 @@ function updateRooms() {
         globalRem.innerHTML = remainText;
       } else {
         const parts = remainText.split(' ');
-        globalRem.innerHTML = `<span>${parts[0]}</span> ${parts.slice(1).join(' ')}`;
+        if (parts[0] === '0m') {
+          globalRem.innerHTML = `<span>${parts.slice(1).join(' ')}</span>`;
+        }
+        else {
+          globalRem.innerHTML = `<span>${parts[0]}</span> ${parts.slice(1).join(' ')}`;
+        } 
       }
     } else {
       globalRem.textContent = '';
