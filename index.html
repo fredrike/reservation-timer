@@ -4,7 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Room Schedule</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>" />
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap');
 
@@ -14,11 +13,11 @@
     --bg: #000;
     --fg: #fff;
     --accent: #00ff88;
-    --dim: #777;
+    --dim: #444;
     --warn: #ffaa00;
     --danger: #ff3333;
     --room-bg: #0a0a0a;
-    --room-border: #2a2a2a;
+    --room-border: #1a1a1a;
     --mono: 'Share Tech Mono', monospace;
     --display: 'Bebas Neue', sans-serif;
     --body: 'Inter', sans-serif;
@@ -51,8 +50,8 @@
     display: grid;
     grid-template-rows: auto 1fr;
     height: 100vh;
-    padding: 2vh 2vw;
-    gap: 2vh;
+    padding: clamp(.5rem, 2vh, 1.5rem) 2vw;
+    gap: clamp(.4rem, 1.5vh, 1.5rem);
   }
 
   /* ── Header ─────────────────────────────────────────── */
@@ -64,7 +63,7 @@
 
   #clock {
     font-family: var(--display);
-    font-size: clamp(6rem, 24vw, 26rem);
+    font-size: clamp(2.5rem, min(12vw, 14vh), 13rem);
     line-height: 1;
     letter-spacing: .04em;
     color: var(--fg);
@@ -74,7 +73,7 @@
 
   #date-line {
     font-family: var(--mono);
-    font-size: clamp(.85rem, 1.7vw, 1.3rem);
+    font-size: clamp(.6rem, 1.2vw, 1.1rem);
     color: var(--dim);
     letter-spacing: .15em;
     text-align: center;
@@ -84,7 +83,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: .3rem;
+    gap: clamp(.1rem, .3vh, .3rem);
     grid-column: 2;
   }
 
@@ -96,7 +95,7 @@
   #controls-left, #controls-right {
     display: flex;
     flex-direction: column;
-    gap: .5rem;
+    gap: clamp(.25rem, .5vh, .5rem);
     transition: opacity .5s;
   }
   #controls-right { align-items: flex-end; }
@@ -113,9 +112,9 @@
     border: 1px solid var(--dim);
     color: var(--dim);
     font-family: var(--mono);
-    font-size: .9rem;
+    font-size: clamp(.6rem, 1.1vw, .75rem);
     letter-spacing: .1em;
-    padding: .4rem .9rem;
+    padding: clamp(.25rem, .5vh, .4rem) .9rem;
     cursor: pointer;
     transition: border-color .2s, color .2s;
     white-space: nowrap;
@@ -123,7 +122,7 @@
   .ctrl-btn:hover        { border-color: var(--accent); color: var(--accent); }
   .ctrl-btn.active       { border-color: var(--accent); color: var(--accent); }
 
-  #advance-btn           { border-color: #444; color: #666; font-size: .85rem; }
+  #advance-btn           { border-color: #333; color: #555; font-size: .7rem; }
   #advance-btn:hover     { border-color: var(--warn); color: var(--warn); }
   #advance-btn.shifted   { border-color: var(--warn); color: var(--warn); }
 
@@ -146,7 +145,7 @@
   /* ── Room grid ──────────────────────────────────────── */
   #rooms {
     display: grid;
-    gap: 1.5vw;
+    gap: clamp(.5rem, 1.2vh, 1.5vw);
     grid-template-columns: repeat(3, 1fr);
     align-items: stretch;
   }
@@ -155,10 +154,10 @@
     background: var(--room-bg);
     border: 1px solid var(--room-border);
     border-radius: 4px;
-    padding: clamp(.8rem, 2vh, 1.8rem) clamp(.8rem, 2vw, 1.8rem);
+    padding: clamp(.4rem, 1.5vh, 1.8rem) clamp(.6rem, 1.5vw, 1.8rem);
     display: flex;
     flex-direction: column;
-    gap: .6rem;
+    gap: clamp(.25rem, .6vh, .6rem);
     position: relative;
     overflow: hidden;
     transition: border-color .4s;
@@ -177,7 +176,7 @@
 
   .room-name {
     font-family: var(--display);
-    font-size: clamp(1.5rem, 4.2vw, 3.4rem);
+    font-size: clamp(1rem, min(3.5vw, 4.5vh), 2.8rem);
     letter-spacing: .06em;
     color: var(--fg);
     line-height: 1;
@@ -187,14 +186,14 @@
 
   .slot-label {
     font-family: var(--mono);
-    font-size: clamp(.75rem, 1.3vw, 1rem);
+    font-size: clamp(.6rem, 1.1vw, .85rem);
     letter-spacing: .12em;
     color: var(--dim);
     text-transform: uppercase;
   }
 
   .current-event {
-    font-size: clamp(1.05rem, 2.2vw, 1.65rem);
+    font-size: clamp(.85rem, 1.8vw, 1.35rem);
     font-weight: 600;
     color: var(--accent);
     line-height: 1.2;
@@ -202,49 +201,56 @@
 
   .current-time-slot {
     font-family: var(--mono);
-    font-size: clamp(.85rem, 1.4vw, 1.15rem);
+    font-size: clamp(.7rem, 1.2vw, .95rem);
     color: #555;
   }
 
-  .progress-bar {
-    height: 3px;
-    background: #111;
+  /* ── Global slot progress (under clock) ────────────────── */
+  #slot-progress-bar {
+    width: clamp(8rem, 20vw, 22rem);
+    height: 13px;
+    background: #1a1a1a;
     border-radius: 2px;
     overflow: hidden;
-    margin-top: auto;
   }
 
-  .progress-fill {
+  #slot-progress-fill {
     height: 100%;
     background: var(--accent);
     border-radius: 2px;
     transition: width 1s linear, background .4s;
+    width: 0%;
   }
-  .progress-fill.warn   { background: var(--warn); }
-  .progress-fill.danger { background: var(--danger); }
+  #slot-progress-fill.warn   { background: var(--warn); }
+  #slot-progress-fill.danger { background: var(--danger); }
 
-  .remaining {
+  #slot-remaining {
     font-family: var(--mono);
-    font-size: clamp(.8rem, 1.3vw, 1.1rem);
+    font-size: clamp(.6rem, 1vw, .82rem);
+    letter-spacing: .1em;
     color: var(--dim);
+    min-height: 1em;
+    text-align: center;
   }
-  .remaining span            { color: var(--fg); font-weight: 600; }
-  .remaining.warn span       { color: var(--warn); }
-  .remaining.danger span     { color: var(--danger); }
+  #slot-remaining span       { color: var(--fg); font-weight: 600; }
+  #slot-remaining.warn       { color: var(--warn); }
+  #slot-remaining.warn span  { color: var(--warn); }
+  #slot-remaining.danger     { color: var(--danger); }
+  #slot-remaining.danger span{ color: var(--danger); }
 
   .next-label {
     font-family: var(--mono);
-    font-size: clamp(.7rem, 1.15vw, .95rem);
+    font-size: clamp(.55rem, .95vw, .78rem);
     letter-spacing: .1em;
     color: var(--dim);
     text-transform: uppercase;
-    margin-top: .3rem;
+    margin-top: clamp(.1rem, .4vh, .3rem);
   }
-  .next-event { font-size: clamp(.9rem, 1.7vw, 1.3rem); color: #999; line-height: 1.2; }
+  .next-event { font-size: clamp(.75rem, 1.4vw, 1.05rem); color: #888; line-height: 1.2; }
 
   .free-text {
     font-family: var(--mono);
-    font-size: clamp(1.05rem, 2.1vw, 1.55rem);
+    font-size: clamp(.9rem, 1.8vw, 1.3rem);
     color: #333;
     letter-spacing: .1em;
   }
@@ -317,6 +323,9 @@
 
     <div id="clock-col">
       <div id="clock">00:00:00</div>
+      <div id="date-line">—</div>
+      <div id="slot-progress-bar"><div id="slot-progress-fill"></div></div>
+      <div id="slot-remaining"></div>
       <div id="offset-indicator">▲ ADVANCED +0 SLOTS</div>
     </div>
 
@@ -484,8 +493,6 @@ function buildRoomCards() {
       <div class="slot-label">CURRENT</div>
       <div class="current-event free-text">FREE</div>
       <div class="current-time-slot"></div>
-      <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
-      <div class="remaining"></div>
       <div class="next-label">NEXT UP</div>
       <div class="next-event">—</div>
     `;
@@ -529,6 +536,59 @@ function updateRooms() {
     nextSlotIdx    = currentSlotIdx + 1 < schedule.length ? currentSlotIdx + 1 : -1;
   }
 
+  // ── Global slot progress (time-based, same for all rooms) ──
+  const globalFill = document.getElementById('slot-progress-fill');
+  const globalRem  = document.getElementById('slot-remaining');
+  let remainText = '', progressPct = 0, urgency = '';
+
+  if (beforeSchedule) {
+    const firstStart = parseMinutes(schedule[0].timeStr);
+    if (firstStart !== null) {
+      const remSec = Math.max(0, firstStart * 60 - nowSec);
+      const remMin = Math.floor(remSec / 60);
+      const remS   = remSec % 60;
+      remainText   = `starts in ${remMin}m ${String(remS).padStart(2,'0')}s`;
+      progressPct  = 0;
+    }
+  } else if (timeSlotIdx >= 0) {
+    const realNext = timeSlotIdx + 1 < schedule.length ? timeSlotIdx + 1 : -1;
+    if (realNext >= 0) {
+      const startSec   = parseMinutes(schedule[timeSlotIdx].timeStr) * 60;
+      const endSec     = parseMinutes(schedule[realNext].timeStr)    * 60;
+      const totalSec   = endSec - startSec;
+      const elapsedSec = nowSec - startSec;
+      const remSec     = Math.max(0, endSec - nowSec);
+      if (totalSec > 0) {
+        progressPct = Math.min(100, (elapsedSec / totalSec) * 100);
+        const remMin = Math.floor(remSec / 60);
+        const remS   = remSec % 60;
+        remainText   = `${remMin}m ${String(remS).padStart(2,'0')}s remaining`;
+        if      (remSec <= DANGER_SECONDS) urgency = 'danger';
+        else if (remSec <= WARN_SECONDS)   urgency = 'warn';
+      }
+    } else {
+      remainText = 'Last slot';
+    }
+  }
+
+  if (globalFill) {
+    globalFill.style.width = progressPct + '%';
+    globalFill.className   = urgency;
+  }
+  if (globalRem) {
+    globalRem.className = urgency;
+    if (remainText) {
+      if (beforeSchedule) {
+        globalRem.innerHTML = remainText;
+      } else {
+        const parts = remainText.split(' ');
+        globalRem.innerHTML = `<span>${parts[0]}</span> ${parts.slice(1).join(' ')}`;
+      }
+    } else {
+      globalRem.textContent = '';
+    }
+  }
+
   roomNames.forEach((_, roomIdx) => {
     const card = document.getElementById(`room-${roomIdx}`);
     if (!card) return;
@@ -539,50 +599,12 @@ function updateRooms() {
     const nextEvent    = cleanName(rawNext);
     const nextTime     = nextSlotIdx >= 0 ? schedule[nextSlotIdx].timeStr : '';
 
-    // Progress bar & remaining
-    let remainText = '', progressPct = 0, urgency = '';
-
-    if (beforeSchedule) {
-      // Count down to the first slot
-      const firstStart = parseMinutes(schedule[0].timeStr);
-      if (firstStart !== null) {
-        const firstStartSec = firstStart * 60;
-        const remSec = Math.max(0, firstStartSec - nowSec);
-        const remMin = Math.floor(remSec / 60);
-        const remS   = remSec % 60;
-        remainText   = `starts in ${remMin}m ${String(remS).padStart(2,'0')}s`;
-        progressPct  = 0;
-      }
-    } else if (timeSlotIdx >= 0) {
-      const realNext = timeSlotIdx + 1 < schedule.length ? timeSlotIdx + 1 : -1;
-      if (realNext >= 0) {
-        const startSec   = parseMinutes(schedule[timeSlotIdx].timeStr) * 60;
-        const endSec     = parseMinutes(schedule[realNext].timeStr)    * 60;
-        const totalSec   = endSec - startSec;
-        const elapsedSec = nowSec - startSec;
-        const remSec     = Math.max(0, endSec - nowSec);
-        if (totalSec > 0) {
-          progressPct = Math.min(100, (elapsedSec / totalSec) * 100);
-          const remMin = Math.floor(remSec / 60);
-          const remS   = remSec % 60;
-          remainText   = `${remMin}m ${String(remS).padStart(2,'0')}s remaining`;
-          if      (remSec <= DANGER_SECONDS) urgency = 'danger';
-          else if (remSec <= WARN_SECONDS)   urgency = 'warn';
-        }
-      } else {
-        remainText = 'Last slot';
-      }
-    }
-
     const evEl   = card.querySelector('.current-event');
     const tsEl   = card.querySelector('.current-time-slot');
-    const fillEl = card.querySelector('.progress-fill');
-    const remEl  = card.querySelector('.remaining');
     const nxtEl  = card.querySelector('.next-event');
     const slotLbl = card.querySelector('.slot-label');
 
     if (beforeSchedule) {
-      // Show as UPCOMING — dim styling, no active glow
       card.classList.remove('active');
       slotLbl.textContent = 'UPCOMING';
       if (currentEvent) {
@@ -610,22 +632,6 @@ function updateRooms() {
         evEl.textContent = 'FREE';
         tsEl.textContent = '';
       }
-    }
-
-    fillEl.style.width = progressPct + '%';
-    fillEl.className   = 'progress-fill' + (urgency ? ' ' + urgency : '');
-
-    remEl.className = 'remaining' + (urgency ? ' ' + urgency : '');
-    if (remainText) {
-      // For "starts in Xm XXs" keep it all dim, no bold first word
-      if (beforeSchedule) {
-        remEl.innerHTML = remainText;
-      } else {
-        const parts = remainText.split(' ');
-        remEl.innerHTML = `<span>${parts[0]}</span> ${parts.slice(1).join(' ')}`;
-      }
-    } else {
-      remEl.textContent = '';
     }
 
     nxtEl.textContent = nextEvent ? (nextTime ? `[${nextTime}] ` : '') + nextEvent : '—';
