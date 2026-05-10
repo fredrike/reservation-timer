@@ -17,3 +17,10 @@
     --display: 'Bebas Neue', sans-serif;
     --body: 'Inter', sans-serif;
   }
+
+
+  #clock {
+    font-family: var(--display);
+    font-size: 40vh;
+    color: var(--fg);
+  }
