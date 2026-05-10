@@ -52,6 +52,10 @@
       100% { background-position: 0% 50%, 100% 50%, 0% 50%; }
     }
 
+    #app {
+      padding: 0px !important;
+    }
+
     /* Active room cards get a blue top bar instead of green */
     .room-card::before {
       background: var(--accent-blue);
