@@ -68,7 +68,8 @@
     }
 
     #clock {
-      font-size: clamp(2.5rem, min(30vw, 28vh), 34rem);
+      /* font-size: clamp(2.5rem, min(30vw, 28vh), 34rem); */
+      font-size: 16vw;
       color: var(--accent);
       font-weight: 700;
       font-variant-numeric: tabular-nums;
@@ -104,4 +105,8 @@
 
 .current-time-slot {
     font-size: clamp(1rem, 1.8vw, 1.5rem);
+}
+
+#rooms {
+  margin: 12px;
 }
