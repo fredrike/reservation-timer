@@ -68,7 +68,7 @@
     }
 
     #clock {
-      font-size: clamp(2.5rem, min(30vw, 32vh), 34rem);
+      font-size: clamp(2.5rem, min(30vw, 28vh), 34rem);
       color: var(--accent);
       font-weight: 700;
       font-variant-numeric: tabular-nums;
