@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Reservation Schedule</title>
+<title data-i18n="meta.title">Reservation Schedule</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Inter:wght@300;400;600&display=swap');
@@ -316,9 +316,9 @@
 
 <div id="drop-zone">
   <div class="border-box">
-    <h1>ROOM SCHEDULE</h1>
-    <p>Drop your schedule Excel file here<br>or click to browse</p>
-    <p class="hint">Column A = time slots · Columns B–D = room names · First row = headers</p>
+    <h1 data-i18n="dropZone.heading">ROOM SCHEDULE</h1>
+    <p><span data-i18n="dropZone.dropText">Drop your schedule Excel file here</span><br><span data-i18n="dropZone.browseText">or click to browse</span></p>
+    <p class="hint" data-i18n="dropZone.hint">Column A = time slots · Columns B–D = room names · First row = headers</p>
   </div>
 </div>
 
@@ -327,9 +327,9 @@
 
     <div id="header-left">
       <div id="controls-left">
-        <button class="ctrl-btn" id="load-btn">LOAD FILE</button>
-        <button class="ctrl-btn" id="advance-btn" title="Advance displayed slot (Space / →)">NEXT SLOT ›</button>
-        <button class="ctrl-btn" id="reset-btn"   title="Reset to clock-based slot (Backspace / ←)">RESET</button>
+        <button class="ctrl-btn" id="load-btn" data-i18n="controls.loadFile">LOAD FILE</button>
+        <button class="ctrl-btn" id="advance-btn" data-i18n="controls.nextSlot" data-i18n-title="controls.advanceTitle" title="Advance displayed slot (Space / →)">NEXT SLOT ›</button>
+        <button class="ctrl-btn" id="reset-btn" data-i18n="controls.reset" data-i18n-title="controls.resetTitle" title="Reset to clock-based slot (Backspace / ←)">RESET</button>
       </div>
     </div>
 
@@ -342,11 +342,11 @@
 
     <div id="header-right">
       <div id="controls-right">
-        <button class="ctrl-btn" id="fs-btn">FULLSCREEN</button>
-        <button class="ctrl-btn" id="scanline-btn">SCANLINES OFF</button>
+        <button class="ctrl-btn" id="fs-btn" data-i18n="controls.fullscreen">FULLSCREEN</button>
+        <button class="ctrl-btn" id="scanline-btn" data-i18n="controls.scanlinesOff">SCANLINES OFF</button>
         <select class="ctrl-btn" id="theme-select">
-          <option value="default-terminal.css">DEFAULT</option>
-          <option value="SM2026.css">SM2026</option>
+          <option value="default-terminal.css" data-i18n="theme.default">DEFAULT</option>
+          <option value="SM2026.css" data-i18n="theme.sm2026">SM2026</option>
         </select>
       </div>
     </div>
@@ -357,7 +357,12 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="lang/i18n.js"></script>
 <script>
+(async function() {
+  await window.i18n.promise;
+  const t = window.i18n.t;
+
 /* ═══════════════════════════════════════════════════════════
    ░░  CONFIG  ░░  Edit these to change alert thresholds
    ═══════════════════════════════════════════════════════════ */
@@ -414,7 +419,7 @@ const scanlineBtn = document.getElementById('scanline-btn');
 scanlineBtn.addEventListener('click', () => {
   scanlinesOn = !scanlinesOn;
   document.body.classList.toggle('scanlines', scanlinesOn);
-  scanlineBtn.textContent = scanlinesOn ? 'SCANLINES ON' : 'SCANLINES OFF';
+  scanlineBtn.innerHTML = scanlinesOn ? t('controls.scanlinesOn') : t('controls.scanlinesOff');
   scanlineBtn.classList.toggle('active', scanlinesOn);
 });
 
@@ -425,7 +430,7 @@ fsBtn.addEventListener('click', () => {
   else document.exitFullscreen();
 });
 document.addEventListener('fullscreenchange', () => {
-  fsBtn.textContent = document.fullscreenElement ? 'EXIT FULL' : 'FULLSCREEN';
+  fsBtn.innerHTML = document.fullscreenElement ? t('controls.exitFull') : t('controls.fullscreen');
 });
 
 /* ── Manual advance ─────────────────────────────────────── */
@@ -436,7 +441,7 @@ const offsetEl = document.getElementById('offset-indicator');
 function setOffset(n) {
   slotOffset = Math.max(0, Math.min(n, Math.max(0, schedule.length - 1)));
   const active = slotOffset > 0;
-  offsetEl.textContent = `▲ ADVANCED +${slotOffset} SLOT${slotOffset !== 1 ? 'S' : ''}`;
+  offsetEl.innerHTML = slotOffset !== 1 ? t('offset.textPlural', { count: slotOffset }) : t('offset.text', { count: slotOffset });
   offsetEl.classList.toggle('visible', active);
   advBtn.classList.toggle('shifted', active);
   resetBtn.classList.toggle('visible', active);
@@ -474,7 +479,7 @@ function loadFile(file) {
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, dateNF: 'HH:MM' });
       parseSchedule(rows);
       dropZone.classList.add('hidden');
-    } catch(err) { alert('Could not read file: ' + err.message); }
+    } catch(err) { alert(t('errors.couldNotReadFile', { message: err.message })); }
   };
   reader.readAsArrayBuffer(file);
 }
@@ -519,11 +524,11 @@ function buildRoomCards() {
     card.innerHTML = `
       <div class="room-name">${name}</div>
       <div class="divider"></div>
-      <div class="slot-label">CURRENT</div>
-      <div class="current-event free-text">FREE</div>
+      <div class="slot-label">${t('room.current')}</div>
+      <div class="current-event free-text">${t('room.free')}</div>
       <div class="current-time-slot"></div>
-      <div class="next-label">NEXT UP</div>
-      <div class="next-event">—</div>
+      <div class="next-label">${t('room.nextUp')}</div>
+      <div class="next-event">${t('room.placeholder')}</div>
     `;
     container.appendChild(card);
   });
@@ -576,7 +581,7 @@ function updateRooms() {
       const remSec = Math.max(0, firstStart * 60 - nowSec);
       const remMin = Math.floor(remSec / 60);
       const remS   = remSec % 60;
-      remainText   = `starts in ${remMin}m ${String(remS).padStart(2,'0')}s`;
+      remainText   = t('time.startsIn', { time: `${remMin}m ${String(remS).padStart(2,'0')}s` });
       progressPct  = 0;
     }
   } else if (timeSlotIdx >= 0) {
@@ -591,12 +596,12 @@ function updateRooms() {
         progressPct = Math.min(100, (elapsedSec / totalSec) * 100);
         const remMin = Math.floor(remSec / 60);
         const remS   = remSec % 60;
-        remainText   = `${remMin}m ${String(remS).padStart(2,'0')}s remaining`;
+        remainText   = t('time.remaining', { time: `${remMin}m ${String(remS).padStart(2,'0')}s` });
         if      (remSec <= DANGER_SECONDS) urgency = 'danger';
         else if (remSec <= WARN_SECONDS)   urgency = 'warn';
       }
     } else {
-      remainText = 'Last slot';
+      remainText = t('room.lastSlot');
     }
   }
 
@@ -640,7 +645,7 @@ function updateRooms() {
 
     if (beforeSchedule) {
       card.classList.remove('active');
-      slotLbl.textContent = 'UPCOMING';
+      slotLbl.textContent = t('room.upcoming');
       if (currentEvent) {
         evEl.className   = 'current-event';
         evEl.style.opacity = '0.45';
@@ -649,11 +654,11 @@ function updateRooms() {
       } else {
         evEl.className   = 'current-event free-text';
         evEl.style.opacity = '1';
-        evEl.textContent = 'FREE';
+        evEl.textContent = t('room.free');
         tsEl.textContent = schedule[0].timeStr;
       }
     } else {
-      slotLbl.textContent = 'CURRENT';
+      slotLbl.textContent = t('room.current');
       evEl.style.opacity  = '1';
       const isActive = !!currentEvent;
       card.classList.toggle('active', isActive);
@@ -663,12 +668,12 @@ function updateRooms() {
         tsEl.textContent = schedule[currentSlotIdx].timeStr + (nextTime ? ' – ' + nextTime : '');
       } else {
         evEl.className   = 'current-event free-text';
-        evEl.textContent = 'FREE';
+        evEl.textContent = t('room.free');
         tsEl.textContent = '';
       }
     }
 
-    nxtEl.textContent = nextEvent ? (nextTime ? `[${nextTime}] ` : '') + nextEvent : '—';
+    nxtEl.textContent = nextEvent ? (nextTime ? `[${nextTime}] ` : '') + nextEvent : t('room.placeholder');
   });
 }
 
@@ -683,6 +688,7 @@ function updateClock() {
 function tick() { updateClock(); updateRooms(); }
 setInterval(tick, 1000);
 tick();
+})();
 </script>
 </body>
 </html>

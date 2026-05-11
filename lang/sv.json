@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "title": "Bokningsschema"
+  },
+  "dropZone": {
+    "heading": "RUMSBOKNING",
+    "dropText": "Dra Excel-fil med schema hit",
+    "browseText": "eller klicka för att bläddra",
+    "hint": "Kolumn A = tidsluckor · Kolumn B–D = rumsnamn · Första raden = rubriker"
+  },
+  "controls": {
+    "loadFile": "LADDA FIL",
+    "nextSlot": "NÄSTA \u203A",
+    "advanceTitle": "Gå framåt (Mellanslag / \u2192)",
+    "reset": "ÅTERSTÄLL",
+    "resetTitle": "Återställ till klockbaserad (Backsteg / \u2190)",
+    "fullscreen": "HELSKÄRM",
+    "exitFull": "AVSLUTA HELSKÄRM",
+    "scanlinesOn": "SKANLINJER PÅ",
+    "scanlinesOff": "SKANLINJER AV"
+  },
+  "theme": {
+    "default": "STANDARD",
+    "sm2026": "SM2026"
+  },
+  "offset": {
+    "text": "\u25B2 AVANCERAD +{{count}} FACK",
+    "textPlural": "\u25B2 AVANCERAD +{{count}} FACK"
+  },
+  "room": {
+    "current": "AKTUELLT",
+    "upcoming": "KOMMANDE",
+    "free": "LEDIGT",
+    "nextUp": "NÄSTA",
+    "placeholder": "\u2014",
+    "lastSlot": "Sista facket"
+  },
+  "time": {
+    "startsIn": "börjar om {{time}}",
+    "remaining": "{{time}} kvar"
+  },
+  "errors": {
+    "couldNotReadFile": "Kunde inte läsa fil: {{message}}"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "title": "Reservation Schedule"
+  },
+  "dropZone": {
+    "heading": "ROOM SCHEDULE",
+    "dropText": "Drop your schedule Excel file here",
+    "browseText": "or click to browse",
+    "hint": "Column A = time slots · Columns B–D = room names · First row = headers"
+  },
+  "controls": {
+    "loadFile": "LOAD FILE",
+    "nextSlot": "NEXT SLOT \u203A",
+    "advanceTitle": "Advance displayed slot (Space / \u2192)",
+    "reset": "RESET",
+    "resetTitle": "Reset to clock-based slot (Backspace / \u2190)",
+    "fullscreen": "FULLSCREEN",
+    "exitFull": "EXIT FULL",
+    "scanlinesOn": "SCANLINES ON",
+    "scanlinesOff": "SCANLINES OFF"
+  },
+  "theme": {
+    "default": "DEFAULT",
+    "sm2026": "SM2026"
+  },
+  "offset": {
+    "text": "\u25B2 ADVANCED +{{count}} SLOT",
+    "textPlural": "\u25B2 ADVANCED +{{count}} SLOTS"
+  },
+  "room": {
+    "current": "CURRENT",
+    "upcoming": "UPCOMING",
+    "free": "FREE",
+    "nextUp": "NEXT UP",
+    "placeholder": "\u2014",
+    "lastSlot": "Last slot"
+  },
+  "time": {
+    "startsIn": "starts in {{time}}",
+    "remaining": "{{time}} remaining"
+  },
+  "errors": {
+    "couldNotReadFile": "Could not read file: {{message}}"
+  }
+}
