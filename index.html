@@ -225,7 +225,7 @@
     background: var(--slot-progress);
     border-radius: 2px;
     transition: width 1s linear, background .4s;
-    width: 0%;
+    width: 100%;
   }
   #slot-progress-fill.warn   { background: var(--warn); }
   #slot-progress-fill.danger { background: var(--danger); }
@@ -593,12 +593,13 @@ function updateRooms() {
       const elapsedSec = nowSec - startSec;
       const remSec     = Math.max(0, endSec - nowSec);
       if (totalSec > 0) {
-        progressPct = Math.min(100, (elapsedSec / totalSec) * 100);
+        const remainingPct = (remSec / totalSec) * 100;
+        progressPct = remainingPct;
         const remMin = Math.floor(remSec / 60);
         const remS   = remSec % 60;
         remainText   = t('time.remaining', { time: `${remMin}m ${String(remS).padStart(2,'0')}s` });
-        if      (remSec <= DANGER_SECONDS) urgency = 'danger';
-        else if (remSec <= WARN_SECONDS)   urgency = 'warn';
+        if      (remainingPct <= 12.5) urgency = 'danger';
+        else if (remainingPct <= 25)   urgency = 'warn';
       }
     } else {
       remainText = t('room.lastSlot');
