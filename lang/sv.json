@@ -24,16 +24,16 @@
     "sm2026": "SM2026"
   },
   "offset": {
-    "text": "\u25B2 AVANCERAD +{{count}} FACK",
-    "textPlural": "\u25B2 AVANCERAD +{{count}} FACK"
+    "text": "\u25B2 AVANCERAT +{{count}} TID",
+    "textPlural": "\u25B2 AVANCERAT +{{count}} TIDER"
   },
   "room": {
-    "current": "AKTUELLT",
-    "upcoming": "KOMMANDE",
-    "free": "LEDIGT",
+    "current": "NUVARANDE",
+    "upcoming": "NÄSTA",
+    "free": "LEDIG",
     "nextUp": "NÄSTA",
     "placeholder": "\u2014",
-    "lastSlot": "Sista facket"
+    "lastSlot": "Sista tiden"
   },
   "time": {
     "startsIn": "börjar om {{time}}",
