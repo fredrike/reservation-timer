@@ -93,7 +93,7 @@
 
 .slot-label {
     font-family: var(--mono);
-    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    font-size: clamp(1rem, 1.75vw, 1.8rem);
     letter-spacing: .12em;
     color: var(--dim);
     text-transform: uppercase;
@@ -104,7 +104,7 @@
 }
 
 .current-event {
-    font-size: clamp(1.05rem, 2.2vw, 1.65rem);
+    font-size: clamp(1.05rem, 2.8vw, 3.2rem);
 }
 
 .current-time-slot {
