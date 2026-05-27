@@ -481,6 +481,7 @@ function loadFile(file) {
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, dateNF: 'HH:MM' });
       parseSchedule(rows);
       dropZone.classList.add('hidden');
+      fileInput.value = '';
     } catch(err) { alert(t('errors.couldNotReadFile', { message: err.message })); }
   };
   reader.readAsArrayBuffer(file);
