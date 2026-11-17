@@ -349,6 +349,7 @@
         <select class="ctrl-btn" id="theme-select">
           <option value="default-terminal.css" data-i18n="theme.default">DEFAULT</option>
           <option value="SM2026.css" data-i18n="theme.sm2026">SM2026</option>
+          <option value="riks2.css" data-i18n="theme.riks2">RIKS ettan/tvåan</option>
         </select>
       </div>
     </div>
@@ -415,13 +416,16 @@ document.addEventListener('mousemove', () => {
   }, 3000);
 });
 
+/* Translate, falling back to English text if the language file could not be loaded */
+const tr = (key, fallback) => { const v = t(key); return v === key ? fallback : v; };
+
 /* ── Scanlines ──────────────────────────────────────────── */
 let scanlinesOn = false;
 const scanlineBtn = document.getElementById('scanline-btn');
 scanlineBtn.addEventListener('click', () => {
   scanlinesOn = !scanlinesOn;
   document.body.classList.toggle('scanlines', scanlinesOn);
-  scanlineBtn.innerHTML = scanlinesOn ? t('controls.scanlinesOn') : t('controls.scanlinesOff');
+  scanlineBtn.innerHTML = scanlinesOn ? tr('controls.scanlinesOn', 'SCANLINES ON') : tr('controls.scanlinesOff', 'SCANLINES OFF');
   scanlineBtn.classList.toggle('active', scanlinesOn);
 });
 
@@ -432,7 +436,7 @@ fsBtn.addEventListener('click', () => {
   else document.exitFullscreen();
 });
 document.addEventListener('fullscreenchange', () => {
-  fsBtn.innerHTML = document.fullscreenElement ? t('controls.exitFull') : t('controls.fullscreen');
+  fsBtn.innerHTML = document.fullscreenElement ? tr('controls.exitFull', 'EXIT FULL') : tr('controls.fullscreen', 'FULLSCREEN');
 });
 
 /* ── Manual advance ─────────────────────────────────────── */
