@@ -21,7 +21,8 @@
   },
   "theme": {
     "default": "DEFAULT",
-    "sm2026": "SM2026"
+    "sm2026": "SM2026",
+    "riks2": "RIKS ettan/tvåan"
   },
   "offset": {
     "text": "\u25B2 ADVANCED +{{count}} SLOT",

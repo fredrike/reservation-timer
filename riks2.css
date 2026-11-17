@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;900&display=swap');
+
+/* Theme based on the RIKS ettan/tvåan logo:
+   deep navy (#1f2a5c), royal blue (#27458f), mid blue (#2a6ab5), sky blue (#43a5de) */
+:root {
+  --bg: #16181c;
+  --fg: #ffffff;
+  --accent: #43a5de;        /* logo sky blue (date line / gymnast) */
+  --accent-blue: #43a5de;
+  --accent-deep: #27458f;   /* logo royal blue */
+  --dim: #8fa6d1;
+  --warn: #ffc400;
+  --danger: #ff4455;
+  --room-bg: rgba(20, 34, 84, 0.85);
+  --room-border: #27458f;
+  --room-name: #ffffff;
+  --time-slot: var(--fg);
+  --slot-progress: #00e676;  /* green at start; index.html switches to --warn (yellow) then --danger (red) */
+  --mono: 'Montserrat', sans-serif;
+  --display: 'Montserrat', sans-serif;
+  --body: 'Montserrat', sans-serif;
+}
+
+html, body {
+  background: #000 radial-gradient(ellipse at center, #2a2d33 0%, #16181c 45%, #000 100%) fixed;
+}
+
+#app {
+  padding: 0px !important;
+}
+
+/* Room cards: gradient top bar like the logo (sky blue -> royal -> navy) */
+.room-card::before {
+  background: linear-gradient(90deg, #43a5de, #27458f 60%, #1f2a5c);
+}
+
+.current-event {
+  color: var(--accent);
+  font-size: clamp(1.05rem, 2.8vw, 3.2rem);
+}
+
+#clock {
+  /* Black weight + italic is wider than SM2026's clock; keep it clear of the side control panels */
+  font-size: 13vw;
+  padding-right: .08em; /* italic overhang, avoids clipping the last digit's gradient */
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-style: italic;
+  background: linear-gradient(135deg, #43a5de 0%, #2a6ab5 45%, #5a78c8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--accent);
+}
+
+.room-name {
+  font-size: clamp(1.5rem, 4.2vw, 3.4rem);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--room-name);
+  line-height: 1;
+  font-weight: 900;
+  font-style: italic;
+}
+
+.slot-label {
+  font-family: var(--mono);
+  font-size: clamp(1rem, 1.75vw, 1.8rem);
+  letter-spacing: .12em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+
+.next-event {
+  color: var(--accent-blue);
+}
+
+.current-time-slot {
+  font-size: clamp(1rem, 1.8vw, 1.5rem);
+}
+
+#rooms {
+  margin: 12px;
+}
